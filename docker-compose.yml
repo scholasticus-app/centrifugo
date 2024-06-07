@@ -1,6 +1,16 @@
 version: "3.8"
 
 services:
+  dragonfly:
+    container_name: dragonflydb
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonflydata:/data
+
   postgres:
     image: postgres:15
     ports:
@@ -16,7 +26,14 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
-    command: ["postgres", "-c", "wal_level=logical", "-c", "wal_writer_delay=10ms"]
+    command:
+      [
+        "postgres",
+        "-c",
+        "wal_level=logical",
+        "-c",
+        "wal_writer_delay=10ms"
+      ]
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -31,7 +48,14 @@ services:
     ports:
       - "29092:29092"
     healthcheck:
-      test: ["CMD", "kafka-topics", "--list", "--bootstrap-server", "localhost:9092"]
+      test:
+        [
+          "CMD",
+          "kafka-topics",
+          "--list",
+          "--bootstrap-server",
+          "localhost:9092"
+        ]
       interval: 2s
       timeout: 5s
       retries: 10
@@ -44,3 +68,6 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+volumes:
+  dragonflydata:
